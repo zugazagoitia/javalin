@@ -8,12 +8,12 @@
 package io.javalin
 
 import io.javalin.http.HttpStatus.IM_A_TEAPOT
-import io.javalin.util.LoomUtil
+//import io.javalin.util.LoomUtil
 import io.javalin.http.HttpStatus.NOT_FOUND
 import io.javalin.testing.TestServlet
 import io.javalin.testing.TestUtil
 import io.javalin.testing.httpCode
-import io.javalin.util.LoomThreadPool
+//import io.javalin.util.LoomThreadPool
 import jakarta.servlet.DispatcherType
 import jakarta.servlet.Filter
 import jakarta.servlet.FilterChain
@@ -190,7 +190,7 @@ class TestCustomJetty {
         }
     }
 
-    @Test
+   /* @Test
     fun `default server uses loom if available`() {
         if (!LoomUtil.loomAvailable) return
         val defaultApp = Javalin.create()
@@ -206,7 +206,7 @@ class TestCustomJetty {
         }
         assertThat(defaultApp.jettyServer.server().threadPool is LoomThreadPool).isTrue()
         assertThat(defaultApp.attribute<String>("testlogs")).contains(LoomUtil.logMsg)
-    }
+    }*/
 
     @Test
     fun `custom connector works`() {

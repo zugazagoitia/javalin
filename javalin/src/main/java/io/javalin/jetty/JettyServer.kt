@@ -8,7 +8,6 @@ package io.javalin.jetty
 
 import io.javalin.config.JavalinConfig
 import io.javalin.util.JavalinLogger
-import io.javalin.util.LoomUtil
 import io.javalin.util.Util
 import io.javalin.util.Util.logJavalinBanner
 import jakarta.servlet.http.HttpServletRequest
@@ -75,7 +74,7 @@ class JettyServer(val cfg: JavalinConfig) {
 
         logJavalinBanner(cfg.showJavalinBanner)
 
-        LoomUtil.logIfLoom(server())
+        //LoomUtil.logIfLoom(server())
 
         (cfg.pvt.resourceHandler as? JettyResourceHandler)?.init(server()) // we want to init this here to get logs in order
 
