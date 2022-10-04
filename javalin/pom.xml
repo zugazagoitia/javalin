@@ -150,6 +150,7 @@
                     <archive>
                         <manifestEntries>
                             <Automatic-Module-Name>io.javalin</Automatic-Module-Name>
+                            <Multi-Release>true</Multi-Release>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -162,6 +163,39 @@
                             <includes>
                                 <include>**/testing/*</include>
                             </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>compile-java-${jdk.version}</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <source>${jdk.version}</source>
+                            <target>${jdk.version}</target>
+                        </configuration>
+                    </execution>
+                   <execution>
+                        <id>compile-java-19</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>--enable-preview</arg>
+                            </compilerArgs>
+                            <release>19</release>
+                            <compileSourceRoots>
+                                <compileSourceRoot>${project.basedir}/src/main/java19</compileSourceRoot>
+                            </compileSourceRoots>
+                            <multiReleaseOutput>true</multiReleaseOutput>
                         </configuration>
                     </execution>
                 </executions>
