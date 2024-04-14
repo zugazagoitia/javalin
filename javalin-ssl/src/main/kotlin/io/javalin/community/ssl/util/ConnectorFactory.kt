@@ -58,7 +58,7 @@ class ConnectorFactory (private var config: SslConfig, private var sslContextFac
             // The ALPN ConnectionFactory.
             val alpn = ALPNServerConnectionFactory()
             // The default protocol to use in case there is no negotiation.
-            alpn.setDefaultProtocol(http11.protocol)
+            alpn.defaultProtocol = http11.protocol
             val tlsHttp2 = SslConnectionFactory(sslContextFactory, alpn.protocol)
             ServerConnector(server, tlsHttp2, alpn, http2, http11)
         } else {

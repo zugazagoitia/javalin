@@ -57,9 +57,10 @@ object SSLUtils {
         if (!reloading) {
             builder.withSwappableIdentityMaterial()
             builder.withSwappableTrustMaterial()
+            builder.withSwappableSslParameters()
             if (config.securityProvider != null) builder.withSecurityProvider(config.securityProvider)
-            builder.withCiphers(*config.tlsConfig.cipherSuites)
-            builder.withProtocols(*config.tlsConfig.protocols)
+            builder.withCiphers(*config.tlsConfig!!.cipherSuites)
+            builder.withProtocols(*config.tlsConfig!!.protocols)
         }
         return builder.build()
     }

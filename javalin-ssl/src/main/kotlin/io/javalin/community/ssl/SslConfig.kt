@@ -66,10 +66,10 @@ class SslConfig {
     var sniHostCheck = true
 
     /**
-     * TLS Security configuration
+     * TLS Security configuration. To use JDK defaults, set to null.
      */
     @JvmField
-    var tlsConfig: TlsConfig = TlsConfig.INTERMEDIATE
+    var tlsConfig: TlsConfig? = TlsConfig.INTERMEDIATE
 
     enum class LoadedIdentity {
         NONE, KEY_MANAGER, KEY_STORE

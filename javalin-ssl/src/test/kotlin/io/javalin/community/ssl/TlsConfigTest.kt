@@ -1,6 +1,10 @@
 package io.javalin.community.ssl
 
+import io.javalin.Javalin
 import io.javalin.community.ssl.certs.Server
+import io.javalin.config.JavalinConfig
+import io.javalin.http.Context
+import okhttp3.CipherSuite
 import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -86,7 +90,7 @@ class TlsConfigTest : IntegrationTestClass() {
     }
 
     @Test
-    fun `test that an Intermediate TLS config does not allow old cipher suites`(){
+    fun `test that an Intermediate TLS config does not allow old cipher suites`() {
         val cipherSuites = TlsConfig.OLD.cipherSuites.subtract(TlsConfig.INTERMEDIATE.cipherSuites.asIterable().toSet())
         // remove intermediate cipher suites from old cipher suites, so that we can test ONLY the old cipher suites
         val client = clientWithTlsConfig(TlsConfig(cipherSuites.toTypedArray(), TlsConfig.INTERMEDIATE.protocols))
@@ -109,12 +113,61 @@ class TlsConfigTest : IntegrationTestClass() {
         }
     }
 
+    @Test
+    fun `test that TLS protocols can be reloaded at runtime`() {
+        // First, we create a server supporting only TLSv1.3 and a client supporting only TLSv1.2
+        val client = clientWithTlsConfig(TlsConfig(TlsConfig.OLD.cipherSuites, arrayOf("TLSv1.2")))
+        val securePort = ports.getAndIncrement()
+        val https = HTTPS_URL_WITH_PORT.apply(securePort)
+        val plugin = SslPlugin {
+            it.insecure = false
+            it.pemFromString(Server.CERTIFICATE_AS_STRING, Server.NON_ENCRYPTED_KEY_AS_STRING)
+            it.securePort = securePort
+            it.tlsConfig = TlsConfig(TlsConfig.MODERN.cipherSuites, arrayOf("TLSv1.3"))
+        }
+        val app = Javalin.create { javalinConfig: JavalinConfig ->
+            javalinConfig.showJavalinBanner = false
+            javalinConfig.registerPlugin(plugin)
+            javalinConfig.router.mount {
+                it.get("/", { ctx: Context -> ctx.result(SUCCESS) })
+            }
+        }.start()
+        //Should fail with an exception because of the old protocol
+        try {
+            client.newCall(
+                Request.Builder().url(
+                    https
+                ).build()
+            ).execute()
+        } catch (e: Exception) {
+            Assertions.assertTrue(e.message!!.contains("protocol"))
+        }
+
+
+        // Then, we reload the server to support TLSv1.2
+        plugin.reload {
+            it.pemFromString(Server.CERTIFICATE_AS_STRING, Server.NON_ENCRYPTED_KEY_AS_STRING)
+            it.tlsConfig = TlsConfig.MODERN // Support for TLSv1.2
+        }
+        client.connectionPool.evictAll()
+
+        // Now, the client should be able to connect
+        Assertions.assertDoesNotThrow {
+            client.newCall(
+                Request.Builder().url(
+                    https
+                ).build()
+            ).execute()
+        }
+
+    }
+
     companion object {
 
         private fun clientWithTlsConfig(config: TlsConfig): OkHttpClient {
 
 
-            val spec = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+            val spec = ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
                 .cipherSuites(*config.cipherSuites)
                 .tlsVersions(*config.protocols)
                 .build()

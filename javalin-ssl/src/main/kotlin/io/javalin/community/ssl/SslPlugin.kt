@@ -45,8 +45,13 @@ class SslPlugin (userConfig: Consumer<SslConfig>) : Plugin<SslConfig>(userConfig
      */
     fun reload(newConfig: Consumer<SslConfig>) {
         val conf = SslConfig()
+        conf.tlsConfig = null // Reset the tlsConfig to avoid overwriting the user's configuration with the default one
         newConfig.accept(conf)
         checkNotNull(sslFactory) { "Cannot reload before the plugin has been applied to a Javalin instance, a server has been patched or if the ssl connector is disabled." }
+        conf.tlsConfig?.let {
+            sslFactory!!.sslParameters.cipherSuites = it.cipherSuites
+            sslFactory!!.sslParameters.protocols = it.protocols
+        }
         val newFactory = SSLUtils.getSslFactory(conf, true)
         SSLFactoryUtils.reload(sslFactory, newFactory)
     }
